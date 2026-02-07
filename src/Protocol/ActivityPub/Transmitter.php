@@ -764,11 +764,8 @@ class Transmitter
 							// But comments to groups aren't directed to the followers collection
 							// This rule is only valid when the actor isn't the group.
 							// The group needs to transmit their content to their followers.
-							// Event participation (Accept/Reject/TentativeAccept) should be directly addressed to the event organizer
-							if (($profile['type'] == 'Group') && ($profile['url'] != ($actor_profile['url'] ?? ''))) {
-								$data['to'][] = $profile['url'];
-							} elseif ($is_event_participation) {
-								// For event participation, the event organizer must be in 'to' field
+							// Event participation (Accept/Reject/TentativeAccept) must be directly addressed to the event organizer
+							if ((($profile['type'] == 'Group') && ($profile['url'] != ($actor_profile['url'] ?? ''))) || $is_event_participation) {
 								$data['to'][] = $profile['url'];
 							} else {
 								$data['cc'][] = $profile['url'];
