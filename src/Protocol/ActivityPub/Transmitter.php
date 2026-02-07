@@ -754,6 +754,7 @@ class Transmitter
 				$condition = ['parent' => $item['parent']];
 			}
 			$parents = Post::select(['id', 'author-link', 'owner-link', 'gravity', 'uri'], $condition, ['order' => ['id']]);
+			$is_event_participation = in_array($item['verb'] ?? '', [Activity::ATTEND, Activity::ATTENDNO, Activity::ATTENDMAYBE]);
 			while ($parent = Post::fetch($parents)) {
 				if ($parent['gravity'] == Item::GRAVITY_PARENT) {
 					$profile = APContact::getByURL($parent['owner-link'], false);
@@ -763,7 +764,11 @@ class Transmitter
 							// But comments to groups aren't directed to the followers collection
 							// This rule is only valid when the actor isn't the group.
 							// The group needs to transmit their content to their followers.
+							// Event participation (Accept/Reject/TentativeAccept) should be directly addressed to the event organizer
 							if (($profile['type'] == 'Group') && ($profile['url'] != ($actor_profile['url'] ?? ''))) {
+								$data['to'][] = $profile['url'];
+							} elseif ($is_event_participation) {
+								// For event participation, the event organizer must be in 'to' field
 								$data['to'][] = $profile['url'];
 							} else {
 								$data['cc'][] = $profile['url'];
