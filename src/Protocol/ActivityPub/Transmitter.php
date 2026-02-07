@@ -754,7 +754,6 @@ class Transmitter
 				$condition = ['parent' => $item['parent']];
 			}
 			$parents = Post::select(['id', 'author-link', 'owner-link', 'gravity', 'uri'], $condition, ['order' => ['id']]);
-			$is_event_participation = in_array($item['verb'] ?? '', [Activity::ATTEND, Activity::ATTENDNO, Activity::ATTENDMAYBE]);
 			while ($parent = Post::fetch($parents)) {
 				if ($parent['gravity'] == Item::GRAVITY_PARENT) {
 					$profile = APContact::getByURL($parent['owner-link'], false);
@@ -765,7 +764,8 @@ class Transmitter
 							// This rule is only valid when the actor isn't the group.
 							// The group needs to transmit their content to their followers.
 							// Event participation (Accept/Reject/TentativeAccept) must be directly addressed to the event organizer
-							if ((($profile['type'] == 'Group') && ($profile['url'] != ($actor_profile['url'] ?? ''))) || $is_event_participation) {
+							$is_event_participation = in_array($item['verb'] ?? '', [Activity::ATTEND, Activity::ATTENDNO, Activity::ATTENDMAYBE]);
+							if (($profile['type'] == 'Group' && $profile['url'] != ($actor_profile['url'] ?? '')) || $is_event_participation) {
 								$data['to'][] = $profile['url'];
 							} else {
 								$data['cc'][] = $profile['url'];
